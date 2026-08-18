@@ -1,5 +1,7 @@
+import fs from "fs";
+import path from "path";
 
-export default async function handler(req, res) {
+export default function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
       success: false,
@@ -7,21 +9,24 @@ export default async function handler(req, res) {
     });
   }
 
-  try {
-    const data = req.body;
+  const filePath = path.join(process.cwd(), "api", "data.json");
 
-    console.log("Received from SIM800L:", data);
+  let data = [];
 
-    return res.status(200).json({
-      success: true,
-      message: "Data received",
-      data: data
-    });
-
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Server error"
-    });
+  if (fs.existsSync(filePath)) {
+    data = JSON.parse(fs.readFileSync(filePath, "utf8"));
   }
+
+  data.push({
+    receivedAt: new Date().toISOString(),
+    ...req.body
+  });
+
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+
+  return res.status(200).json({
+    success: true,
+    message: "Data saved",
+    data: req.body
+  });
 }
