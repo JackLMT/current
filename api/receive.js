@@ -1,6 +1,3 @@
-import fs from "fs";
-import path from "path";
-
 export default function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
@@ -9,24 +6,11 @@ export default function handler(req, res) {
     });
   }
 
-  const filePath = path.join(process.cwd(), "api", "data.json");
-
-  let data = [];
-
-  if (fs.existsSync(filePath)) {
-    data = JSON.parse(fs.readFileSync(filePath, "utf8"));
-  }
-
-  data.push({
-    receivedAt: new Date().toISOString(),
-    ...req.body
-  });
-
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+  console.log("Received:", req.body);
 
   return res.status(200).json({
     success: true,
-    message: "Data saved",
+    message: "POST received successfully",
     data: req.body
   });
 }
